@@ -17,18 +17,17 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      // scopes: ["profile", "email"],
     },
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-      // scopes: ['profile', 'email'],
     },
   },
   emailAndPassword: {
     enabled: true,
+    // if true, we cannot set up a re-send verification link flow because there is no user session
     // requireEmailVerification: true,
-    async sendResetPassword({ user, url }) {
+    sendResetPassword: async ({ user, url }) => {
       sendEmail({
         to: user.email,
         name: user.name,

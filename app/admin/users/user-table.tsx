@@ -156,7 +156,7 @@ const UserTable = ({ users, currentUser }: Props) => {
                       />
                     )}
                   {userIdToDelete === user._id!.toString() && (
-                    <div className="absolute -top-2 right-full flex items-center gap-x-2 rounded-md bg-white px-4 py-2 shadow-md">
+                    <div className="absolute top-1/2 right-full flex -translate-y-1/2 items-center gap-x-2 rounded-md bg-white px-4 py-2 shadow-md">
                       <p className="text-xs">Confirm delete?</p>
                       <button
                         className="text-destructive text-xs underline"

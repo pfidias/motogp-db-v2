@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { LoadingButton } from "@/components/loading-button";
-import { PasswordInput } from "@/components/password-input";
+import { LoadingButton } from '@/components/loading-button';
+import { PasswordInput } from '@/components/password-input';
 import {
   Card,
   CardContent,
@@ -9,7 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -17,31 +17,31 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
-import { passwordSchema } from "@/lib/validation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
-import { z } from "zod";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { authClient } from '@/lib/auth-client';
+import { passwordSchema } from '@/lib/validation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
+import { z } from 'zod';
 
 const signUpSchema = z
   .object({
-    firstName: z.string().min(1, { message: "First name is required" }),
-    lastName: z.string().min(1, { message: "Last name is required" }),
-    email: z.email({ message: "Please enter a valid email" }),
+    firstName: z.string().min(1, { message: 'First name is required' }),
+    lastName: z.string().min(1, { message: 'Last name is required' }),
+    email: z.email({ message: 'Please enter a valid email' }),
     password: passwordSchema,
     passwordConfirmation: z
       .string()
-      .min(1, { message: "Please confirm password" }),
+      .min(1, { message: 'Please confirm password' }),
   })
   .refine((data) => data.password === data.passwordConfirmation, {
-    message: "Passwords do not match",
-    path: ["passwordConfirmation"],
+    message: 'Passwords do not match',
+    path: ['passwordConfirmation'],
   });
 
 type SignUpValues = z.infer<typeof signUpSchema>;
@@ -54,15 +54,20 @@ export function SignUpForm() {
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-      passwordConfirmation: "",
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      passwordConfirmation: '',
     },
   });
 
-  async function onSubmit({ email, password, firstName, lastName }: SignUpValues) {
+  async function onSubmit({
+    email,
+    password,
+    firstName,
+    lastName,
+  }: SignUpValues) {
     setError(null);
 
     const name = `${firstName} ${lastName}`;
@@ -71,14 +76,14 @@ export function SignUpForm() {
       email,
       password,
       name,
-      callbackURL: "/verify-email",
+      callbackURL: '/verify-email',
     });
 
     if (error) {
-      setError(error.message || "Something went wrong");
+      setError(error.message || 'Something went wrong');
     } else {
-      toast.success("Signed up successfully");
-      router.push("/verify-email");
+      toast.success('Signed up successfully');
+      router.push('/verify-email');
     }
   }
 
@@ -102,10 +107,11 @@ export function SignUpForm() {
                 <FormItem>
                   <FormLabel>First Name</FormLabel>
                   <FormControl>
-                    <Input 
-                      className="md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs" 
-                      placeholder="John" 
-                      {...field} />
+                    <Input
+                      className="placeholder:text-muted-foreground/50 placeholder:text-xs md:text-xs"
+                      placeholder="John"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,10 +125,11 @@ export function SignUpForm() {
                 <FormItem>
                   <FormLabel>Last Name</FormLabel>
                   <FormControl>
-                    <Input 
-                      className="md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs" 
-                      placeholder="Doe" 
-                      {...field} />
+                    <Input
+                      className="placeholder:text-muted-foreground/50 placeholder:text-xs md:text-xs"
+                      placeholder="Doe"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -137,7 +144,7 @@ export function SignUpForm() {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
-                      className="md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs"
+                      className="placeholder:text-muted-foreground/50 placeholder:text-xs md:text-xs"
                       type="email"
                       placeholder="your@email.com"
                       {...field}
@@ -156,7 +163,7 @@ export function SignUpForm() {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <PasswordInput
-                      className="md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs"
+                      className="placeholder:text-muted-foreground/50 placeholder:text-xs md:text-xs"
                       autoComplete="new-password"
                       placeholder="Password"
                       {...field}
@@ -175,7 +182,7 @@ export function SignUpForm() {
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <PasswordInput
-                      className="md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs"
+                      className="placeholder:text-muted-foreground/50 placeholder:text-xs md:text-xs"
                       autoComplete="new-password"
                       placeholder="Confirm password"
                       {...field}
@@ -187,7 +194,7 @@ export function SignUpForm() {
             />
 
             {error && (
-              <div role="alert" className="text-xs text-destructive">
+              <div role="alert" className="text-destructive text-xs">
                 {error}
               </div>
             )}
@@ -201,7 +208,7 @@ export function SignUpForm() {
       <CardFooter>
         <div className="flex w-full justify-center border-t pt-4">
           <p className="text-muted-foreground text-center text-xs">
-            Already have an account?{" "}
+            Already have an account?{' '}
             <Link href="/sign-in" className="underline">
               Sign in
             </Link>
