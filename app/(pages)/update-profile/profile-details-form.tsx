@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { LoadingButton } from "@/components/loading-button";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingButton } from '@/components/loading-button';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -10,21 +10,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { UserAvatar } from "@/components/user-avatar";
-import { User } from "@/lib/auth";
-import { authClient } from "@/lib/auth-client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { XIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { toast } from "react-hot-toast";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { UserAvatar } from '@/components/user-avatar';
+import { User } from '@/lib/auth';
+import { authClient } from '@/lib/auth-client';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { XIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { toast } from 'react-hot-toast';
 
 const updateProfileSchema = z.object({
-  name: z.string().trim().min(1, { message: "Name is required" }),
+  name: z.string().trim().min(1, { message: 'Name is required' }),
   image: z.string().optional().nullable(),
 });
 
@@ -40,10 +40,12 @@ export function ProfileDetailsForm({ user }: ProfileDetailsFormProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const form = useForm<UpdateProfileValues>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      name: user.name ?? "",
+      name: user.name ?? '',
       image: user.image ?? null,
     },
   });
@@ -55,9 +57,9 @@ export function ProfileDetailsForm({ user }: ProfileDetailsFormProps) {
     const { error } = await authClient.updateUser({ name, image });
 
     if (error) {
-      toast.error(error.message || "Failed to update profile");
+      toast.error(error.message || 'Failed to update profile');
     } else {
-      toast.success("Profile updated");
+      toast.success('Profile updated');
       router.refresh();
     }
   }
@@ -68,13 +70,13 @@ export function ProfileDetailsForm({ user }: ProfileDetailsFormProps) {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result as string;
-        form.setValue("image", base64, { shouldDirty: true });
+        form.setValue('image', base64, { shouldDirty: true });
       };
       reader.readAsDataURL(file);
     }
   }
 
-  const imagePreview = form.watch("image");
+  const imagePreview = form.watch('image');
 
   const loading = form.formState.isSubmitting;
 
@@ -93,10 +95,11 @@ export function ProfileDetailsForm({ user }: ProfileDetailsFormProps) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input 
-                      className="md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs" 
+                    <Input
+                      className="placeholder:text-muted-foreground/50 placeholder:text-xs md:text-xs"
                       placeholder="Full name"
-                      {...field} />
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -111,7 +114,8 @@ export function ProfileDetailsForm({ user }: ProfileDetailsFormProps) {
                   <FormLabel>Profile image</FormLabel>
                   <FormControl>
                     <Input
-                      className="md:text-xs placeholder:text-muted-foreground/50 placeholder:text-xs" 
+                      ref={inputRef}
+                      className="placeholder:text-muted-foreground/50 placeholder:text-xs md:text-xs"
                       type="file"
                       accept="image/*"
                       onChange={(e) => handleImageChange(e)}
@@ -128,12 +132,13 @@ export function ProfileDetailsForm({ user }: ProfileDetailsFormProps) {
                   name={user.name}
                   image={imagePreview}
                   className="size-16"
+                  onClick={() => inputRef.current?.click()}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   className="absolute -top-2 -right-2 size-6 rounded-full"
-                  onClick={() => form.setValue("image", null)}
+                  onClick={() => form.setValue('image', null)}
                   aria-label="Remove image"
                 >
                   <XIcon className="size-4" />

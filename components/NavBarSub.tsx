@@ -43,6 +43,7 @@ const AdminNavBarSub = () => {
       <div className="w-1/3"></div>
       <p className="text-foreground w-1/3 text-lg font-semibold">Admin Panel</p>
       <div className="flex w-1/3 items-center justify-end gap-x-4 pr-16 text-right text-xs text-slate-900">
+        <Link href="/admin/upload-image">Image</Link>
         <Link href="/admin/users">Users</Link>
       </div>
     </div>

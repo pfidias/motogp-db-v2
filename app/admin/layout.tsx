@@ -15,6 +15,8 @@ export default async function AdminLayout({
   if (user.role !== 'admin') redirect('/'); // eventually show a "not authorized" page
 
   return (
-    <div className="flex-1 flex-col bg-zinc-200 px-6 py-12">{children}</div>
+    <div className="flex flex-1 flex-col bg-zinc-200 px-6 py-12">
+      {children}
+    </div>
   );
 }
