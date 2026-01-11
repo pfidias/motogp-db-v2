@@ -2,12 +2,13 @@ import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { nextCookies } from 'better-auth/next-js';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
-import { client, db } from './mongo-client';
+import { client, db, connectMongoDB } from './mongo-client';
 import { connectMongoose } from './mongoose';
 import { sendEmail } from '@/lib/email';
 import { passwordSchema } from './validation';
 
 await connectMongoose();
+await connectMongoDB();
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, {

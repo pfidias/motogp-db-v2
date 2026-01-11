@@ -1,4 +1,3 @@
-import { error } from 'console';
 import { getServerSession } from './server-session';
 
 export const requireAdmin = async () => {

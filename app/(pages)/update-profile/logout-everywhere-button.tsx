@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { LoadingButton } from "@/components/loading-button";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "react-hot-toast";
+import { LoadingButton } from '@/components/loading-button';
+import { authClient } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 export function LogoutEverywhereButton() {
   const [loading, setLoading] = useState(false);
@@ -13,14 +13,15 @@ export function LogoutEverywhereButton() {
 
   async function handleLogoutEverywhere() {
     setLoading(true);
+
     const { error } = await authClient.revokeSessions();
     setLoading(false);
 
     if (error) {
-      toast.error(error.message || "Failed to log out everywhere");
+      toast.error(error.message || 'Failed to log out everywhere');
     } else {
-      toast.success("Logged out from all devices");
-      router.push("/sign-in");
+      toast.success('Logged out from all devices');
+      router.push('/sign-in');
       router.refresh();
     }
   }

@@ -1,54 +1,60 @@
 'use client';
 
-import { useRef, ChangeEvent } from 'react';
+import { ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Input } from '@/components/ui/input';
-import { UserAvatar } from '@/components/user-avatar';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { uploadImage } from '@/app/actions/upload-image';
-import { FaCamera } from 'react-icons/fa';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { Button } from '@/components/ui/button';
-import { XIcon } from 'lucide-react';
 import { LoadingButton } from '@/components/loading-button';
+import ImageSelector from '@/components/image-selector';
 
 type Props = {
-  folder?: string;
-  initialImageSrc?: string | null;
+  initialRiderImageSrc?: string | null;
+  initialFlagImageSrc?: string | null;
+  initialActionImageSrc?: string | null;
 };
 
 const imageFormSchema = z.object({
-  image: z.string().optional().nullable(),
+  riderImage: z.string().optional().nullable(),
+  flagImage: z.string().optional().nullable(),
+  actionImage: z.string().optional().nullable(),
 });
 
 export type ImageFormValues = z.infer<typeof imageFormSchema>;
 
-const ImageSelectorForm = ({ folder = '', initialImageSrc = null }: Props) => {
+const ImageSelectorForm = ({
+  initialRiderImageSrc = null,
+  initialFlagImageSrc = null,
+  initialActionImageSrc = null,
+}: Props) => {
   const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ImageFormValues>({
     resolver: zodResolver(imageFormSchema),
     defaultValues: {
-      image: initialImageSrc,
+      riderImage: initialRiderImageSrc,
+      flagImage: initialFlagImageSrc,
+      actionImage: initialActionImageSrc,
     },
   });
 
   const { control, handleSubmit } = form;
   const { isDirty, isSubmitting } = form.formState;
 
-  const imageSrc = form.watch('image');
+  const riderImageField = 'riderImage' as const;
+  const flagImageField = 'flagImage' as const;
+  const actionImageField = 'actionImage' as const;
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const riderImageSrc = form.watch(riderImageField);
+  const flagImageSrc = form.watch(flagImageField);
+  const actionImageSrc = form.watch(actionImageField);
+
+  const imageMissing = !riderImageSrc || !flagImageSrc || !actionImageSrc;
+
+  const handleRiderImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
@@ -57,22 +63,59 @@ const ImageSelectorForm = ({ folder = '', initialImageSrc = null }: Props) => {
     reader.onloadend = () => {
       // base64 encoded image
       const data = reader.result as string;
-      form.setValue('image', data, { shouldDirty: true });
+      form.setValue(riderImageField, data, { shouldDirty: true });
+    };
+
+    reader.readAsDataURL(file);
+  };
+  const handleFlagImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      // base64 encoded image
+      const data = reader.result as string;
+      form.setValue(flagImageField, data, { shouldDirty: true });
+    };
+
+    reader.readAsDataURL(file);
+  };
+  const handleActionImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      // base64 encoded image
+      const data = reader.result as string;
+      form.setValue(actionImageField, data, { shouldDirty: true });
     };
 
     reader.readAsDataURL(file);
   };
 
-  const handleFormSubmit = async ({ image }: ImageFormValues) => {
-    console.log(image);
-    if (!image) return;
+  const handleFormSubmit = async ({
+    riderImage,
+    flagImage,
+    actionImage,
+  }: ImageFormValues) => {
+    if (!riderImage || !flagImage || !actionImage) return;
 
     try {
-      const response = await uploadImage(image, folder);
+      const riderResponse = await uploadImage(riderImage, 'rider');
+      const flagResponse = await uploadImage(flagImage, 'flag');
+      const actionResponse = await uploadImage(actionImage, 'action');
 
-      console.log(response);
-      toast.success('Image uploaded successfully.');
-      form.reset({ image });
+      const riderImageUrl = riderResponse.secure_url;
+      const flagImageUrl = flagResponse.secure_url;
+      const actionImageUrl = actionResponse.secure_url;
+
+      console.log(riderImageUrl, flagImageUrl, actionImageUrl);
+      toast.success('Images uploaded successfully.');
+      form.reset({ riderImage: null, flagImage: null, actionImage: null });
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -89,54 +132,48 @@ const ImageSelectorForm = ({ folder = '', initialImageSrc = null }: Props) => {
     <div className="mx-auto flex flex-1 flex-col items-center justify-center">
       <Form {...form}>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4">
-          <FormField
-            control={control}
-            name="image"
-            render={() => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    ref={inputRef}
-                    className="hidden"
-                    type="file"
-                    accept="image/jpg,image/jpeg,image/png"
-                    onChange={handleChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="relative size-36">
-            <div
-              className="cursor-pointer rounded-full"
-              onClick={() => inputRef.current?.click()}
-            >
-              <UserAvatar
-                image={imageSrc}
-                className="size-36 border-2 border-amber-500"
-                name={''}
-              />
-              <div className="group absolute inset-0 flex size-36 items-center justify-center rounded-full transition-colors duration-300 hover:bg-white/40">
-                <FaCamera className="text-3xl text-black opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <section className="flex flex-col gap-y-6">
+            <section className="flex justify-center gap-x-6">
+              <div className="flex flex-col items-center">
+                <ImageSelector
+                  className="size-36 border-2 border-amber-500 bg-zinc-100"
+                  src={riderImageSrc}
+                  control={control}
+                  handleImageChange={handleRiderImageChange}
+                  fieldName={riderImageField}
+                  handleImageReset={() => form.setValue(riderImageField, null)}
+                />
+                <label className="mt-2 text-xs">Rider</label>
               </div>
+              <div className="flex flex-col items-center">
+                <ImageSelector
+                  className="size-36 border-2 border-amber-500 bg-zinc-100"
+                  src={flagImageSrc}
+                  control={control}
+                  handleImageChange={handleFlagImageChange}
+                  fieldName={flagImageField}
+                  handleImageReset={() => form.setValue(flagImageField, null)}
+                />
+                <label className="mt-2 text-xs">Flag</label>
+              </div>
+            </section>
+            <div className="flex flex-col items-center">
+              <ImageSelector
+                className="h-36 w-90 rounded-md border-2 border-amber-500 bg-zinc-100"
+                src={actionImageSrc}
+                control={control}
+                handleImageChange={handleActionImageChange}
+                fieldName={actionImageField}
+                handleImageReset={() => form.setValue(actionImageField, null)}
+              />
+              <label className="mt-2 text-xs">Action</label>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              className="absolute top-0 right-0 size-6 rounded-full"
-              onClick={() => form.reset({ image: null })}
-              aria-label="Remove image"
-              disabled={!imageSrc}
-            >
-              <XIcon className="size-4" />
-            </Button>
-          </div>
+          </section>
 
           <LoadingButton
             type="submit"
             loading={isSubmitting}
-            disabled={!isDirty || isSubmitting}
+            disabled={!isDirty || isSubmitting || imageMissing}
           >
             Save
           </LoadingButton>
