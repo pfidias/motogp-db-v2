@@ -10,46 +10,22 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { FaCamera } from 'react-icons/fa';
-import { type Control } from 'react-hook-form';
+import type { Control, FieldValues, Path } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { XIcon } from 'lucide-react';
-import { type GeneralFormValues } from '@/lib/schemas';
 import { cn } from '@/lib/utils';
 
-// type ImageSelectorWrapperProps = React.ComponentPropsWithoutRef<'div'> & {
-//   src: string | null | undefined;
-//   alt?: string;
-// };
+type ImageSelectorProps<T extends FieldValues> =
+  React.ComponentPropsWithoutRef<'div'> & {
+    src: string | null | undefined;
+    alt?: string;
+    control: Control<T>;
+    fieldName: Path<T>;
+    handleImageChange: (e: ChangeEvent<HTMLInputElement>) => void;
+    handleImageReset: () => void;
+  };
 
-// const ImageSelectorWrapper = ({
-//   src,
-//   alt,
-//   className,
-//   ...props
-// }: ImageSelectorWrapperProps) => {
-//   return (
-//     <div
-//       className={cn(
-//         'relative flex size-8 shrink-0 overflow-hidden rounded-full',
-//         className,
-//       )}
-//       {...props}
-//     >
-//       {src && <Image src={src} alt={alt ?? ''} fill className="object-cover" />}
-//     </div>
-//   );
-// };
-
-type ImageSelectorProps = React.ComponentPropsWithoutRef<'div'> & {
-  src: string | null | undefined;
-  alt?: string;
-  control: Control<GeneralFormValues>;
-  fieldName: keyof GeneralFormValues;
-  handleImageChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  handleImageReset: () => void;
-};
-
-const ImageSelector = ({
+const ImageSelector = <T extends FieldValues>({
   src,
   alt,
   control,
@@ -58,7 +34,7 @@ const ImageSelector = ({
   handleImageReset,
   className,
   ...props
-}: ImageSelectorProps) => {
+}: ImageSelectorProps<T>) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   return (
     <>
@@ -83,7 +59,7 @@ const ImageSelector = ({
       <div className="relative">
         <div
           className={cn(
-            'group relative flex size-8 shrink-0 cursor-pointer overflow-clip rounded-full text-2xl text-black',
+            'group relative flex size-8 shrink-0 cursor-pointer overflow-hidden rounded-full text-2xl text-black',
             className,
           )}
           {...props}
@@ -95,7 +71,7 @@ const ImageSelector = ({
           {src && (
             <Image
               src={src}
-              alt={alt ?? ''}
+              alt={alt ?? 'Form image'}
               fill
               className="pointer-events-none object-cover"
             />
@@ -118,22 +94,3 @@ const ImageSelector = ({
 };
 
 export default ImageSelector;
-
-// const ImageSelectorRefWrapper = forwardRef<
-//   HTMLDivElement,
-//   React.HTMLAttributes<HTMLDivElement>
-// >(({ className, ...props }, ref) => {
-//   return (
-//     <div
-//       ref={ref}
-//       data-slot="avatar"
-//       className={cn(
-//         'relative flex size-8 shrink-0 overflow-hidden rounded-full',
-//         className,
-//       )}
-//       {...props}
-//     ></div>
-//   );
-// });
-
-// ImageSelectorRefWrapper.displayName = 'ImageSelectorRefWrapper';

@@ -1,19 +1,25 @@
 import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
+import { type AuthContext } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
-import { client, db, connectMongoDB } from './mongo-client';
-import { connectMongoose } from './mongoose';
+// import { client, db, connectMongoDB } from './mongo-client';
+import { connectMongoose, mongoose } from './mongoose';
 import { sendEmail } from '@/lib/email';
 import { passwordSchema } from './validation';
 
-await connectMongoose();
-await connectMongoDB();
+// await connectMongoose();
+// await connectMongoDB();
+const instance: typeof mongoose = await connectMongoose();
+const client = instance.connection.getClient();
+const db = client.db();
 
 export const auth = betterAuth({
-  database: mongodbAdapter(db, {
-    client,
-  }),
+  database: mongodbAdapter(db, { client }),
+  async onRequest(request: Request, ctx: AuthContext) {
+    console.log('onRequest:', request.url);
+    await connectMongoose();
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,

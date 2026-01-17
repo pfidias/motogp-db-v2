@@ -18,9 +18,9 @@ type Props = {
 };
 
 const imageFormSchema = z.object({
-  riderImage: z.string().optional().nullable(),
-  flagImage: z.string().optional().nullable(),
-  actionImage: z.string().optional().nullable(),
+  riderImage: z.string().nullable(),
+  flagImage: z.string().nullable(),
+  actionImage: z.string().nullable(),
 });
 
 export type ImageFormValues = z.infer<typeof imageFormSchema>;
@@ -54,46 +54,21 @@ const ImageSelectorForm = ({
 
   const imageMissing = !riderImageSrc || !flagImageSrc || !actionImageSrc;
 
-  const handleRiderImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    field: keyof ImageFormValues,
+  ) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
     const reader = new FileReader();
 
     reader.onloadend = () => {
-      // base64 encoded image
       const data = reader.result as string;
-      form.setValue(riderImageField, data, { shouldDirty: true });
+      form.setValue(field, data, { shouldDirty: true });
     };
 
-    reader.readAsDataURL(file);
-  };
-  const handleFlagImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-
-    if (!file) return;
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      // base64 encoded image
-      const data = reader.result as string;
-      form.setValue(flagImageField, data, { shouldDirty: true });
-    };
-
-    reader.readAsDataURL(file);
-  };
-  const handleActionImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-
-    if (!file) return;
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      // base64 encoded image
-      const data = reader.result as string;
-      form.setValue(actionImageField, data, { shouldDirty: true });
-    };
-
+    // base64 encoded image
     reader.readAsDataURL(file);
   };
 
@@ -138,8 +113,11 @@ const ImageSelectorForm = ({
                 <ImageSelector
                   className="size-36 border-2 border-amber-500 bg-zinc-100"
                   src={riderImageSrc}
+                  alt="Rider image"
                   control={control}
-                  handleImageChange={handleRiderImageChange}
+                  handleImageChange={(e) =>
+                    handleImageChange(e, riderImageField)
+                  }
                   fieldName={riderImageField}
                   handleImageReset={() => form.setValue(riderImageField, null)}
                 />
@@ -149,8 +127,11 @@ const ImageSelectorForm = ({
                 <ImageSelector
                   className="size-36 border-2 border-amber-500 bg-zinc-100"
                   src={flagImageSrc}
+                  alt="Flag image"
                   control={control}
-                  handleImageChange={handleFlagImageChange}
+                  handleImageChange={(e) =>
+                    handleImageChange(e, flagImageField)
+                  }
                   fieldName={flagImageField}
                   handleImageReset={() => form.setValue(flagImageField, null)}
                 />
@@ -159,10 +140,13 @@ const ImageSelectorForm = ({
             </section>
             <div className="flex flex-col items-center">
               <ImageSelector
-                className="h-36 w-90 rounded-md border-2 border-amber-500 bg-zinc-100"
+                className="h-36 w-90 rounded-sm border-2 border-amber-500 bg-zinc-100"
                 src={actionImageSrc}
+                alt="Action image"
                 control={control}
-                handleImageChange={handleActionImageChange}
+                handleImageChange={(e) =>
+                  handleImageChange(e, actionImageField)
+                }
                 fieldName={actionImageField}
                 handleImageReset={() => form.setValue(actionImageField, null)}
               />
