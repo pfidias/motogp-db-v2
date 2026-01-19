@@ -6,18 +6,20 @@ import { Form } from '@/components/ui/form';
 import { uploadImage } from '@/app/actions/upload-image';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { type Path, useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { LoadingButton } from '@/components/loading-button';
 import ImageSelector from '@/components/image-selector';
 
 type Props = {
+  // initialRiderImagesSrc?: (string | null)[];
   initialRiderImageSrc?: string | null;
   initialFlagImageSrc?: string | null;
   initialActionImageSrc?: string | null;
 };
 
 const imageFormSchema = z.object({
+  // riderImages: z.array(z.string().nullable()).length(2),
   riderImage: z.string().nullable(),
   flagImage: z.string().nullable(),
   actionImage: z.string().nullable(),
@@ -26,6 +28,7 @@ const imageFormSchema = z.object({
 export type ImageFormValues = z.infer<typeof imageFormSchema>;
 
 const ImageSelectorForm = ({
+  // initialRiderImagesSrc = [null, null],
   initialRiderImageSrc = null,
   initialFlagImageSrc = null,
   initialActionImageSrc = null,
@@ -35,6 +38,7 @@ const ImageSelectorForm = ({
   const form = useForm<ImageFormValues>({
     resolver: zodResolver(imageFormSchema),
     defaultValues: {
+      // riderImages: initialRiderImagesSrc,
       riderImage: initialRiderImageSrc,
       flagImage: initialFlagImageSrc,
       actionImage: initialActionImageSrc,
@@ -44,19 +48,23 @@ const ImageSelectorForm = ({
   const { control, handleSubmit } = form;
   const { isDirty, isSubmitting } = form.formState;
 
+  // const riderImagesField = 'riderImages' as const;
   const riderImageField = 'riderImage' as const;
   const flagImageField = 'flagImage' as const;
   const actionImageField = 'actionImage' as const;
 
+  // const riderImagesSrc = form.watch(riderImagesField);
   const riderImageSrc = form.watch(riderImageField);
   const flagImageSrc = form.watch(flagImageField);
   const actionImageSrc = form.watch(actionImageField);
 
-  const imageMissing = !riderImageSrc || !flagImageSrc || !actionImageSrc;
+  const imageMissing =
+    // riderImagesSrc.some((image) => !image) ||
+    !riderImageSrc || !flagImageSrc || !actionImageSrc;
 
   const handleImageChange = (
     e: ChangeEvent<HTMLInputElement>,
-    field: keyof ImageFormValues,
+    field: Path<ImageFormValues>,
   ) => {
     const file = e.target.files?.[0];
 
@@ -73,24 +81,53 @@ const ImageSelectorForm = ({
   };
 
   const handleFormSubmit = async ({
+    // riderImages,
     riderImage,
     flagImage,
     actionImage,
   }: ImageFormValues) => {
-    if (!riderImage || !flagImage || !actionImage) return;
+    if (
+      /* riderImages.some((image) => !image) */ !riderImage ||
+      !flagImage ||
+      !actionImage
+    )
+      return;
 
     try {
+      // const riderResponses = await Promise.all(
+      //   riderImages.map((image, i) =>
+      //     image !== initialRiderImagesSrc[i]
+      //       ? uploadImage(image!, 'rider')
+      //       : Promise.resolve({ secure_url: image! }),
+      //   ),
+      // );
       const riderResponse = await uploadImage(riderImage, 'rider');
       const flagResponse = await uploadImage(flagImage, 'flag');
-      const actionResponse = await uploadImage(actionImage, 'action');
+      const actionResponse =
+        actionImageSrc !== initialActionImageSrc
+          ? await uploadImage(actionImage, 'action')
+          : { secure_url: actionImage! };
 
+      // const riderImagesUrl = riderResponses.map(
+      //   (response) => response.secure_url,
+      // );
       const riderImageUrl = riderResponse.secure_url;
       const flagImageUrl = flagResponse.secure_url;
       const actionImageUrl = actionResponse.secure_url;
 
-      console.log(riderImageUrl, flagImageUrl, actionImageUrl);
+      console.log(
+        // riderImagesUrl,
+        riderImageUrl,
+        flagImageUrl,
+        actionImageUrl,
+      );
       toast.success('Images uploaded successfully.');
-      form.reset({ riderImage: null, flagImage: null, actionImage: null });
+      form.reset({
+        // riderImages: riderImages.map(() => null),
+        riderImage: null,
+        flagImage: null,
+        actionImage: null,
+      });
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -112,13 +149,17 @@ const ImageSelectorForm = ({
               <div className="flex flex-col items-center">
                 <ImageSelector
                   className="size-36 border-2 border-amber-500 bg-zinc-100"
+                  // for array of images: src={riderImagesSrc[i]}
                   src={riderImageSrc}
                   alt="Rider image"
                   control={control}
+                  // for array of images: handleImageChange={(e) => handleImageChange(e, `riderImages.${i}`)}
                   handleImageChange={(e) =>
                     handleImageChange(e, riderImageField)
                   }
+                  // for array of images: fieldName={`riderImages.${i}`}
                   fieldName={riderImageField}
+                  // for array of images: handleImageReset={() => form.setValue(`riderImages.${i}`, null)}
                   handleImageReset={() => form.setValue(riderImageField, null)}
                 />
                 <label className="mt-2 text-xs">Rider</label>
@@ -127,7 +168,7 @@ const ImageSelectorForm = ({
                 <ImageSelector
                   className="size-36 border-2 border-amber-500 bg-zinc-100"
                   src={flagImageSrc}
-                  alt="Flag image"
+                  alt="Rider image"
                   control={control}
                   handleImageChange={(e) =>
                     handleImageChange(e, flagImageField)

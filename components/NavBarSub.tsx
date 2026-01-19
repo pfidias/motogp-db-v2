@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { downloadPrimaryData } from '@/lib/download-primary-data';
 
 const NavBarSub = () => {
   const pathname = usePathname();
@@ -45,6 +46,14 @@ const AdminNavBarSub = () => {
       <div className="flex w-1/3 items-center justify-end gap-x-4 pr-16 text-right text-xs text-slate-900">
         <Link href="/admin/upload-image">Image</Link>
         <Link href="/admin/users">Users</Link>
+        <button
+          onClick={async () => {
+            const result = await downloadPrimaryData();
+            console.log(result);
+          }}
+        >
+          Download
+        </button>
       </div>
     </div>
   );

@@ -19,13 +19,12 @@ if (!MONGODB_URI) {
 }
 
 /**
- * Global is used here to maintain a cached connection
- * across hot reloads in development and across lambda invocations.
- */
-interface MongooseCache {
+ * Module level caching ensures single mongoose connection across hot reloads in development and across lambda invocations.
+ **/
+type MongooseCache = {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
-}
+};
 
 let cached: MongooseCache = {
   conn: null,

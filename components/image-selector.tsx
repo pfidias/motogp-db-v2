@@ -73,6 +73,7 @@ const ImageSelector = <T extends FieldValues>({
               src={src}
               alt={alt ?? 'Form image'}
               fill
+              sizes="100%"
               className="pointer-events-none object-cover"
             />
           )}

@@ -85,7 +85,7 @@ export const PasswordReset = ({ firstName, link }: EmailProps) => {
           <Preview>Reset your password</Preview>
           <Container className="border border-solid border-[#f0f0f0] bg-white p-12">
             <Img
-              src="https://res.cloudinary.com/dwwbtbkyy/image/upload/v1767454931/Logo_olnr7g.png"
+              src="https://res.cloudinary.com/dwwbtbkyy/image/upload/v1768667998/Logo_small.png"
               width={100}
               height={100}
               alt="MotoGP DB Logo"
