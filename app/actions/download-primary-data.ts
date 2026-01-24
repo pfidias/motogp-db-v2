@@ -7,10 +7,7 @@ import path from 'path';
 import { URL } from 'url';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { requireAdmin } from './require-admin';
-import Season from '@/app/models/season';
-import GP from '@/app/models/gp';
-import { type GP as GPType } from '@/lib/validation';
+import { requireAdmin } from '@/lib/require-admin';
 
 let hasSPR2 = false;
 let hasRAC2 = false;
@@ -46,7 +43,7 @@ const isValidUrl = (url: string) => {
   }
 };
 
-// assumes a non 200 response means no RAC2
+// assumes a non 200 response means there is no second part
 const setHasRAC2 = async (year: number, code: string) => {
   const response = await fetch(
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC2/Classification.pdf`,
@@ -181,7 +178,7 @@ const downloadFile = (url: string, dest: string): Promise<void> => {
 
 export const downloadSingle = async (
   url: string,
-  outputDir: string = '../motogp_downloads',
+  outputDir: string = '../Primary Data',
 ): Promise<DownloadResult | null> => {
   const { error } = await requireAdmin();
   if (error) {
@@ -252,7 +249,7 @@ export const downloadSingle = async (
 
 export const downloadMultiple = async (
   urls: string[],
-  outputDir: string = '../motogp_downloads',
+  outputDir: string = '../Primary Data',
 ): Promise<MultipleDownloadResult> => {
   const downloadedFiles: DownloadResult[] = [];
   const failedUrls: FailedUrl[] = [];
@@ -316,83 +313,35 @@ export const downloadMultiple = async (
   };
 };
 
-export const downloadPrimaryData = async () => {
-  const currentYear = new Date().getFullYear();
-  const year = currentYear - 1;
+/*********************************************************************************************
+ * @description Downloads primary data PDFs and extracts text from them.
+ * @param year
+ * @param code
+ * @param index - not zero based
+ * @returns Promise<MultipleDownloadResult>
+ *********************************************************************************************/
 
-  // in final version, we would first check if the GP exists for the given year
-  const [{ gp_id }] = await GP.find<GPType>({ year })
-    .sort({ gp_id: -1 })
-    .limit(1)
-    .select('gp_id -_id');
-
-  // in final version, we would first check if an event exists for the given year and gp id (which is gp_id + 1)
-  const [{ code }] = await Season.aggregate<{ code: string }>([
-    {
-      $match: {
-        year,
-      },
-    },
-    {
-      $unwind: {
-        path: '$gps',
-      },
-    },
-    {
-      $match: {
-        'gps.gp_id': gp_id - 10,
-      },
-    },
-    {
-      $set: {
-        rcd_id: '$gps.rcd_id',
-      },
-    },
-    {
-      $lookup: {
-        from: 'codes',
-        localField: 'rcd_id',
-        foreignField: 'rcd_id',
-        as: 'code_lu',
-      },
-    },
-    {
-      $set: {
-        code: {
-          $getField: {
-            field: 'code',
-            input: {
-              $first: '$code_lu',
-            },
-          },
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        code: 1,
-      },
-    },
-  ]);
-
+export const downloadPrimaryData = async (
+  year: number,
+  code: string,
+  index: number,
+) => {
   // set the globals
   await setHasSPR2(year, code);
   await setHasRAC2(year, code);
 
-  const dir = `../Primary Data/${year}/${code}`;
+  // TODO: reset number of leading zeros in the final version
+  const dir = `../Primary Data/${year}/${index < 10 ? '00' : '0'}${index} - ${code}`;
 
-  const urls = [
+  const baseUrls = [
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/FP1/Analysis.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/PR/Analysis.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/FP2/Analysis.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/Q1/Analysis.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/Q2/Analysis.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR/Analysis.pdf`,
-    `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR2/Analysis.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/WUP/Analysis.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC/Analysis.pdf`,
-    `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC2/Analysis.pdf`,
 
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/FP1/Classification.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/PR/Classification.pdf`,
@@ -400,21 +349,35 @@ export const downloadPrimaryData = async () => {
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/Q1/Classification.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/Q2/Classification.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR/Classification.pdf`,
-    `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR2/Classification.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/WUP/Classification.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC/Classification.pdf`,
-    `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC2/Classification.pdf`,
 
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR/Grid.pdf`,
-    `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR2/Grid.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC/Grid.pdf`,
-    `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC2/Grid.pdf`,
 
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR/Session.pdf`,
-    `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR2/Session.pdf`,
     `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC/Session.pdf`,
-    `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC2/Session.pdf`,
   ];
+
+  const spr2Urls = hasSPR2
+    ? [
+        `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR2/Analysis.pdf`,
+        `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR2/Classification.pdf`,
+        `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR2/Grid.pdf`,
+        `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/SPR2/Session.pdf`,
+      ]
+    : [];
+
+  const rac2Urls = hasRAC2
+    ? [
+        `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC2/Analysis.pdf`,
+        `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC2/Classification.pdf`,
+        `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC2/Grid.pdf`,
+        `https://resources.motogp.com/files/results/${year}/${code}/MotoGP/RAC2/Session.pdf`,
+      ]
+    : [];
+
+  const urls = [...baseUrls, ...spr2Urls, ...rac2Urls];
 
   return await downloadMultiple(urls, dir);
 };
