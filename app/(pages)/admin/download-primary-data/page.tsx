@@ -16,6 +16,11 @@ const DownloadPrimaryDataPage = async () => {
   }
 
   const gps = await Season.aggregate<GPSelector>([
+    // {
+    //   $match: {
+    //     year: 2025,
+    //   },
+    // },
     {
       $sort: {
         year: -1,

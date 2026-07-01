@@ -8,6 +8,8 @@ import { URL } from 'url';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { requireAdmin } from '@/lib/require-admin';
+import { revalidatePath } from 'next/cache';
+import { error } from 'console';
 
 let hasSPR2 = false;
 let hasRAC2 = false;
@@ -97,6 +99,14 @@ const extractTextFromPDF = async (
       EOF`);
 
     const stats = fs.statSync(txtPath);
+    if (stats.size === 0) {
+      console.error(
+        `✗ Failed to extract text from PDF: Extracted text file is empty, likely due to a copy-paste failure from Adobe Acrobat.`,
+      );
+      throw new Error(
+        'Extracted text file is empty, likely due to a copy-paste failure from Adobe Acrobat. Please check the PDF file and try again.',
+      );
+    }
     console.log(
       `✓ Extraction complete! Size: ${stats.size.toLocaleString()} bytes`,
     );
@@ -301,6 +311,8 @@ export const downloadMultiple = async (
     });
   }
   console.log('='.repeat(90));
+
+  revalidatePath('/admin/download-primary-data');
 
   return {
     downloadedFiles,
