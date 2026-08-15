@@ -9,7 +9,6 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { requireAdmin } from '@/lib/require-admin';
 import { revalidatePath } from 'next/cache';
-import { error } from 'console';
 
 let hasSPR2 = false;
 let hasRAC2 = false;

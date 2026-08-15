@@ -21,6 +21,7 @@ export default async function AuthLayout({
           src={logo}
           className="drop-shadow-lg"
           alt="MotoGP DB Logo"
+          loading="eager"
           width={150}
           height={150}
         />
